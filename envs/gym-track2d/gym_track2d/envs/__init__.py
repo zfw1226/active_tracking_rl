@@ -1,0 +1,1 @@
+from gym_track2d.envs.track_1v1 import Track1v1Env
