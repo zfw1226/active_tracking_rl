@@ -12,7 +12,7 @@ class Track1v1Env(gym.Env):
     metadata = {'render.modes': ['human', 'rgb_array']}
 
     def __init__(self,
-                 maze_type='U',
+                 map_type='Block',
                  pob_size=6,
                  action_type='VonNeumann',
                  obs_type='Partial',
@@ -24,12 +24,12 @@ class Track1v1Env(gym.Env):
         # Random seed with internal gym seeding
         self.seed()
         self.num_agents_max = self.num_agents = 2
-        self.maze_type = maze_type
+        self.map_type = map_type
         self.level = level
         # Size of the partial observable window
         self.pob_size = pob_size
         # Maze: 0: free space, 1: wall
-        self.init_maze(self.maze_type)
+        self.init_maze(self.map_type)
 
         self.render_trace = render_trace
         self.traces = []
@@ -50,7 +50,6 @@ class Track1v1Env(gym.Env):
         self.action_space = [tracker_action_space, target_action_space]
 
         # Observation space
-        print(self.obs_type)
         tracker_obs_space = self.define_observation(self.obs_type)
         target_obs_space = self.define_observation(self.obs_type)
         self.observation_space = [tracker_obs_space, target_obs_space]
@@ -138,7 +137,7 @@ class Track1v1Env(gym.Env):
 
     def reset(self):
         # Reset maze
-        self.init_maze(self.maze_type)
+        self.init_maze(self.map_type)
         self.state = self.init_states
         if 'Nav' in self.target_mode:
             for i in range(self.num_agents-1):
@@ -210,20 +209,20 @@ class Track1v1Env(gym.Env):
 
         return self.fig
 
-    def init_maze(self, maze_type):
-        if maze_type == 'Random':
+    def init_maze(self, map_type):
+        if map_type == 'Maze':
             if self.level > 0:
                 r = self.level * 0.02
             else:
                 r = .03*np.random.random()
             self.maze_generator = RandomMazeGenerator(width=80, height=80, complexity=r, density=r)
-        elif maze_type == 'Block':
+        elif map_type == 'Block':
             if self.level > 0:
                 r = self.level * 0.05
             else:
                 r = 0.15*np.random.random()
             self.maze_generator = RandomBlockMazeGenerator(maze_size=80, obstacle_ratio=r)
-        elif maze_type == 'Empty':
+        elif map_type == 'Empty':
             self.maze_generator = RandomBlockMazeGenerator(maze_size=80, obstacle_ratio=0)
         self.maze = np.array(self.maze_generator.get_maze())
         self.maze_size = self.maze.shape
@@ -245,16 +244,11 @@ class Track1v1Env(gym.Env):
         low_obs = 0  # Lowest integer in observation
         high_obs = 6  # Highest integer in observation
         if obs_type == 'Full':
-            obs_space = spaces.Box(low=low_obs,
-                                                high=high_obs,
-                                                shape=(1, self.maze_size[0], self.maze_size[1]),
-                                                )
+            obs_space = spaces.Box(low=low_obs, high=high_obs,
+                                   shape=(1, self.maze_size[0], self.maze_size[1]), dtype=np.float32)
         elif self.obs_type == 'Partial':
-            obs_space = spaces.Box(low=low_obs,
-                                           high=high_obs,
-                                           shape=(1, self.pob_size * 2 + 1, self.pob_size * 2 + 1),
-                                           dtype=np.float32
-                                           )
+            obs_space = spaces.Box(low=low_obs, high=high_obs,
+                                   shape=(1, self.pob_size*2+1, self.pob_size*2+1), dtype=np.float32)
         else:
             raise TypeError('Observation type must be either \'full\' or \'partial\'')
         return obs_space
