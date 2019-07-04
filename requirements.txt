@@ -1,0 +1,9 @@
+gym==0.12.5
+imageio==2.3.0
+scikit-image==0.14.0
+tensorboardX==1.1
+numpy==1.14.0
+setproctitle==1.1.10
+
+
+
