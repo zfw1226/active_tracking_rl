@@ -29,18 +29,20 @@ def create_env(env_id, args):
 class Rescale(gym.Wrapper):
     def __init__(self, env, args):
         super(Rescale, self).__init__(env)
+        self.new_maxd = 1.0
+        self.new_mind = -1.0
         if type(env.observation_space) == list:
             self.mx_d = 255.0
             self.mn_d = 0.0
             shape = env.observation_space[0].shape
+            self.num_agents = len(self.observation_space)
+            self.observation_space = [Box(self.new_mind, self.new_maxd, shape) for i in range(self.num_agents)]
         else:
             self.mx_d = env.observation_space.high
             self.mn_d = env.observation_space.low
             shape = env.observation_space.shape
+            self.observation_space = Box(self.new_mind, self.new_maxd, shape)
         self.obs_range = self.mx_d - self.mn_d
-        self.new_maxd = 1.0
-        self.new_mind = -1.0
-        self.observation_space = Box(self.new_mind, self.new_maxd, shape)
         self.args = args
         self.inv_img = self.choose_rand_seed() and self.args.inv
 
@@ -57,6 +59,8 @@ class Rescale(gym.Wrapper):
         self.inv_img = self.choose_rand_seed() and self.args.inv
         if self.inv_img:
             ob = 255 - ob
+
+        # rescale image to [-1, 1]
         ob = self.rescale(np.float32(ob))
         return ob
 
@@ -84,15 +88,16 @@ class UnrealPreprocess(gym.ObservationWrapper):
             num_agnets = len(self.observation_space)
         else:
             obs_shape = self.observation_space.shape
-            num_agnets = 1
+            num_agnets = None
         self.channel = obs_shape[2]
         if abs(obs_shape[0] - self.input_size) + abs(obs_shape[1] - self.input_size) == 0:
             self.resize = False
         else:
             self.resize = True
         if self.gray is True:
-            self.observation_space = [Box(-1.0, 1.0, [1, self.input_size, self.input_size],
-                                          dtype=np.uint8) for i in range(num_agnets)]
+            self.channel = 1
+        if num_agnets is None:
+            self.observation_space = Box(-1.0, 1.0, [self.channel, self.input_size, self.input_size], dtype=np.uint8)
         else:
             self.observation_space = [Box(-1.0, 1.0, [self.channel, self.input_size, self.input_size],
                                           dtype=np.uint8) for i in range(num_agnets)]
