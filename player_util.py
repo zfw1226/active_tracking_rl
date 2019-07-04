@@ -121,7 +121,7 @@ class Agent(object):
         pred_loss = torch.zeros(1, 1).to(self.device)
         entropies = torch.zeros(self.num_agents, 1).to(self.device)
         w_entropies = float(self.args.entropy)*torch.ones(self.num_agents, 1).to(self.device)
-        w_entropies[1][0] = float(self.w_entropy_coach)
+        w_entropies[1][0] = float(self.w_entropy_target)
         R = Variable(R, requires_grad=True).to(self.device)
         gae = torch.zeros(1, 1).to(self.device)
         l1_loss = L1Loss()

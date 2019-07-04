@@ -18,7 +18,7 @@ parser.add_argument('--lr', type=float, default=0.001, metavar='LR', help='learn
 parser.add_argument('--gamma', type=float, default=0.9, metavar='G', help='discount factor for rewards (default: 0.99)')
 parser.add_argument('--tau', type=float, default=1.00, metavar='T', help='parameter for GAE (default: 1.00)')
 parser.add_argument('--entropy', type=float, default=0.01, metavar='E', help='parameter for entropy (default: 0.01)')
-parser.add_argument('--entropy-coach', type=float, default=0.2, metavar='EC', help='parameter for entropy (default: 0.01)')
+parser.add_argument('--entropy-target', type=float, default=0.2, metavar='EC', help='parameter for entropy (default: 0.01)')
 parser.add_argument('--seed', type=int, default=1, metavar='S', help='random seed (default: 1)')
 parser.add_argument('--workers', type=int, default=1, metavar='W', help='how many training processes to use (default: 32)')
 parser.add_argument('--num-steps', type=int, default=20, metavar='NS', help='number of forward steps in A3C (default: 300)')
@@ -65,7 +65,7 @@ if __name__ == '__main__':
     env = create_env(args.env, args)
 
     shared_model = build_model(
-        env.observation_space, env.action_space, args, device)
+        env.observation_space, env.action_space, args, device).to(device)
 
     params = shared_model.parameters()
 
@@ -77,7 +77,6 @@ if __name__ == '__main__':
     shared_model.share_memory()
 
     if args.shared_optimizer:
-        print ('share memory')
         if args.optimizer == 'RMSprop':
             optimizer = SharedRMSprop(params, lr=args.lr)
         if args.optimizer == 'Adam':
@@ -88,7 +87,7 @@ if __name__ == '__main__':
 
     current_time = datetime.now().strftime('%b%d_%H-%M')
     args.log_dir = os.path.join(args.log_dir, args.env, current_time)
-    if args.gpu_ids == -1:
+    if args.gpu_ids[-1] == -1:
         env.close()
 
     processes = []

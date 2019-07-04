@@ -41,7 +41,7 @@ def train(rank, args, shared_model, optimizer, train_modes, n_iters, env=None):
 
     env.seed(args.seed)
     player = Agent(None, env, args, None, device)
-    player.w_entropy_coach = args.entropy_coach
+    player.w_entropy_target = args.entropy_target
     player.gpu_id = gpu_id
 
     # prepare model
