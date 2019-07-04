@@ -1,4 +1,4 @@
-# AD-VAT: AD-VAT: An Asymmetric Dueling mechanism for learning Visual Active Tracking
+# AD-VAT: An Asymmetric Dueling mechanism for learning Visual Active Tracking
 # Introduction
 This repository is the code for [AD-VAT (ICLR2019)](https://openreview.net/pdf?id=HkgYmhR9KX). 
 It contains the code for training/testing and the 2D environments.
@@ -22,7 +22,7 @@ pip install -r requirements.txt
 ```
 **Note that you need install `OpenCV`, `Pytorch`, and `the tracking environments` additionally.**
 
-# Prepare the tracking environments
+## Prepare the tracking environments
 We provide various 2D and 3D environments to validate our methods.
 The 2D environment is a matrix map where obstacles are randomly placed.
 The 2D experiment can run on a CPU-only machine.
@@ -99,12 +99,13 @@ python gym_eval.py --env {ENV_NAME} --network tat-cnn-lstm --rnn-out 256 --load-
 # Visualization
 You could monitor the performance while training using `tensorboard`:
 ```
-   tensorboard --logdir {PATH_TO_LOGS}
+tensorboard --logdir {PATH_TO_LOGS}
 ```
 If you use the the default setting while training, `PATH_TO_LOGS` should be `logs/{ENV_NAME}/{DATE}`
 
-If you found AD-VAT useful, please consider citing:
+
 # Citation
+If you found AD-VAT useful, please consider citing:
 ```
 @inproceedings{zhong2018advat,
   title={{AD}-{VAT}: An Asymmetric Dueling mechanism for learning Visual Active Tracking},
