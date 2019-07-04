@@ -14,7 +14,7 @@ class Track1v1Env(gym.Env):
     def __init__(self,
                  maze_type='U',
                  pob_size=6,
-                 action_type=['VonNeumann', 'VonNeumann', 'VonNeumann'],
+                 action_type='VonNeumann',
                  obs_type='Partial',
                  target_mode='PZR',
                  live_display=True,
@@ -45,13 +45,14 @@ class Track1v1Env(gym.Env):
         self.state = None
 
         # Action space
-        tracker_action_space = self.define_action(self.action_type[0])
-        target_action_space = self.define_action(self.action_type[1])
+        tracker_action_space = self.define_action(self.action_type)
+        target_action_space = self.define_action(self.action_type)
         self.action_space = [tracker_action_space, target_action_space]
 
         # Observation space
-        tracker_obs_space = self.define_observation(self.obs_type[0])
-        target_obs_space = self.define_observation(self.obs_type[1])
+        print(self.obs_type)
+        tracker_obs_space = self.define_observation(self.obs_type)
+        target_obs_space = self.define_observation(self.obs_type)
         self.observation_space = [tracker_obs_space, target_obs_space]
 
         # nav
@@ -70,8 +71,8 @@ class Track1v1Env(gym.Env):
         self.C_step = 0
 
     def step(self, action):
-        # Player 0: try to reach the goal and avoid player 1
-        # Player 1: try to catch player 0
+        # Player 0: try to catch player 1
+        # Player 1: try to reach the goal and avoid player 0
         old_state = self.state.copy()
         # Update current state
         rewards = np.zeros(self.num_agents)
@@ -86,7 +87,7 @@ class Track1v1Env(gym.Env):
 
         for i in range(self.num_agents):
             self.state[i], self.C_collision[i] = self._next_state(self.state[i], int(action[i]),
-                                                                  self.action_type[i])
+                                                                  self.action_type)
 
         self.traces_relative = []
         for j in range(self.num_agents):
