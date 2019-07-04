@@ -112,8 +112,8 @@ def test(args, shared_model, train_modes, n_iters):
             print('Save best!')
             max_score = ave_reward_sum[0]
             model_dir = os.path.join(args.log_dir, 'all-best-{0}.dat'.format(n_iter))
-            tracker_model_dir = os.path.join(args.log_dir, 'tracker-best-{0}.dat'.format(n_iter))
-            target_model_dir = os.path.join(args.log_dir, 'target-best-{0}.dat'.format(n_iter))
+            tracker_model_dir = os.path.join(args.log_dir, 'tracker-best.dat'.format(n_iter))
+            target_model_dir = os.path.join(args.log_dir, 'target-best.dat'.format(n_iter))
         else:
             model_dir = os.path.join(args.log_dir, 'all-new.dat'.format(args.env))
             tracker_model_dir = os.path.join(args.log_dir, 'tracker-new.dat')
