@@ -51,8 +51,7 @@ It is important to limit number of worker processes to number of cpu cores avail
 as too many processes (e.g. more than one process per cpu core available) will actually be detrimental 
 in training speed and effectiveness.
 `--split` means that it will save the tracker and target model separately for further evaluation.
-
-You can also run the two baseline methods referred in the original paper, as following:
+Besides, you can also run the two baseline methods referred in the paper.
 
 To train tracker with `Ram` target:
 ```
