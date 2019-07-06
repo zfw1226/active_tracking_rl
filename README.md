@@ -24,27 +24,28 @@ pip install -r requirements.txt
 ```
 **Note that you need install `OpenCV`, `Pytorch`, and `the 2D/3D environments` additionally.**
 
-## Prepare the tracking environments
-We provide various 2D and 3D environments to validate our methods.
+## Prepare the 2D/3D Environments
+We provide various 2D and 3D environments to validate the effectiveness of AD-VAT.
 
+![2d_env](./figs/2d_env.png)
 The **2D environment** is a matrix map where obstacles are randomly placed.
 The 2D experiment can run on a CPU-only machine.
 In the 2D environments, you can evaluate and quantify the effectiveness of AD-VAT in a few minutes. 
 
-To install 2D environments [gym-track2d](/envs/gym-track2d), you need run:
+To install 2D environments([gym-track2d](/envs/gym-track2d)), you need run:
 ```
 pip install -e envs/gym_track2d
 ```
 
-The 3D environments are built on Unreal Engine(UE4), which could flexibly
-simulate a photo-realistic world.
+![3d_env](./figs/3d_env.png)
+The **3D environments** are built on Unreal Engine(UE4), which could be flexibly customized to simulate 
+real-world active tracking scenarios.
 To run the 3D environments, GPU is necessary.
 
 To install 3D environments, **please follow the instructions in 
 [gym-unrealcv](https://github.com/zfw1226/gym-unrealcv).**
 
 # Running on 2D Environments
-![2d_env](./figs/2d_env.png)
 ## Training
 You can try AD-VAT in 2D environments by running:
 ```
@@ -84,7 +85,6 @@ python gym_eval.py --env Track2D-BlockPartialAdv-v0 --network tat-maze-lstm --lo
 ```
 
 # Running on 3D Environments
-![3d_env](./figs/3d_env.png)
 ## Training
 You can try AD-VAT in 3D environments by running:
 ```
