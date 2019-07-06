@@ -1,34 +1,37 @@
-# AD-VAT: An Asymmetric Dueling mechanism for learning Visual Active Tracking
-# Introduction
-This repository is the code for [AD-VAT (ICLR2019)](https://openreview.net/pdf?id=HkgYmhR9KX). 
-It contains the code for training/testing and the 2D environments.
-The 3D environments are available in [gym-unrealcv](https://github.com/zfw1226/gym-unrealcv).
+# AD-VAT
+This repository is the code for 
+[AD-VAT: An Asymmetric Dueling mechanism for learning Visual Active Tracking (ICLR 2019)](https://openreview.net/pdf?id=HkgYmhR9KX). 
 
+It contains the code for training/testing(Pytorch) and the 2D environments.
+The 3D environments are hosted in [gym-unrealcv](https://github.com/zfw1226/gym-unrealcv).
+
+![framework](./figs/framework.png)
 # Dependencies
 This repository requires:
 - Python >= 3.6
 - Pytorch >= 1.0
-- Opencv-python >= 3.4
-- TensorboardX == 1.1
+- Opencv >= 3.4
 - Numpy == 1.14.0
-- setproctitle, scikit-image, imageio
+- setproctitle, scikit-image, imageio, TensorboardX
 
 See [requirements.txt](requirements.txt) for more details.
 # Installation
+To download the repository and install the requirements, you can run as:
 ```
 git clone https://github.com/zfw1226/active_tracking_rl.git
 cd active_tracking_rl
 pip install -r requirements.txt
 ```
-**Note that you need install `OpenCV`, `Pytorch`, and `the tracking environments` additionally.**
+**Note that you need install `OpenCV`, `Pytorch`, and `the 2D/3D environments` additionally.**
 
 ## Prepare the tracking environments
 We provide various 2D and 3D environments to validate our methods.
-The 2D environment is a matrix map where obstacles are randomly placed.
+
+The **2D environment** is a matrix map where obstacles are randomly placed.
 The 2D experiment can run on a CPU-only machine.
 In the 2D environments, you can evaluate and quantify the effectiveness of AD-VAT in a few minutes. 
 
-To install 2D environments [gym-track2d](/envs/gym-track2d), you can run:
+To install 2D environments [gym-track2d](/envs/gym-track2d), you need run:
 ```
 pip install -e envs/gym_track2d
 ```
@@ -41,6 +44,7 @@ To install 3D environments, **please follow the instructions in
 [gym-unrealcv](https://github.com/zfw1226/gym-unrealcv).**
 
 # Running on 2D Environments
+![2d_env](./figs/2d_env.png)
 ## Training
 You can try AD-VAT in 2D environments by running:
 ```
@@ -80,6 +84,7 @@ python gym_eval.py --env Track2D-BlockPartialAdv-v0 --network tat-maze-lstm --lo
 ```
 
 # Running on 3D Environments
+![3d_env](./figs/3d_env.png)
 ## Training
 You can try AD-VAT in 3D environments by running:
 ```
