@@ -76,10 +76,16 @@ You can evaluate the tracker by running:
 ```
 python gym_eval.py --env {ENV_NAME} --network tat-maze-lstm --load-tracker {PATH_TO_YOUR_TRACKER}
 ```
-`ENV_NAME` could be: `Track2D-BlockPartialRam-v0`, `Track2D-BlockPartialNav-v0`, `Track2D-MazePartialRam-v0`, `Track2D-MazePartialNav-v0`.
+The ``ENV_NAME`` we used to evaluate in the paper is:
+- `Track2D-BlockPartialNav-v0` (Block-Nav),
+- `Track2D-BlockPartialRam-v0` (Block-Ram), 
+- `Track2D-MazePartialNav-v0` (Maze-Nav).
+- `Track2D-MazePartialRam-v0` (Maze-Ram), 
+
 If you use the the default setting while training, the `PATH_TO_YOUR_MODLE` should be `logs/{ENV_NAME}/{DATE}/tracker-best.dat`
 
-You can also evaluate the effectiveness of the tracker-aware target by running with different trackers, as:
+
+You can also evaluate the effectiveness of the `tracker-aware target` by running with different trackers, as:
 ```
 python gym_eval.py --env Track2D-BlockPartialAdv-v0 --network tat-maze-lstm --load-tracker {PATH_TO_YOUR_TRACKER} --load-target {PATH_TO_YOUR_TARGET}
 ```
@@ -97,8 +103,11 @@ You can evaluate the tracker by running:
 ```
 python gym_eval.py --env {ENV_NAME} --network tat-cnn-lstm --rnn-out 256 --load-tracker {PATH_TO_YOUR_TRACKER} 
 ```
-``ENV_NAME`` could be: `UnrealTrack-UrbanCityNav-DiscreteColor-v1`, `UnrealTrack-SnowForestNav-DiscreteColor-v1`,
-`UnrealTrack-GarageNav-DiscreteColor-v0`
+The ``ENV_NAME`` we used to evaluate in the paper is: 
+- `UnrealTrack-DuelingRoomNav-DiscreteColor-v4` (DR Room), 
+- `UnrealTrack-UrbanCityNav-DiscreteColor-v1` (Urban City), 
+- `UnrealTrack-SnowForestNav-DiscreteColor-v1` (Snow Village),
+- `UnrealTrack-GarageNav-DiscreteColor-v0` (Parking Lot)
 
 # Visualization
 You could monitor the performance while training using `tensorboard`:
