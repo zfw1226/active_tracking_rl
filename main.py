@@ -67,7 +67,12 @@ if __name__ == '__main__':
     shared_model = build_model(
         env.observation_space, env.action_space, args, device).to(device)
 
-    params = shared_model.parameters()
+    if args.train_mode == 0:
+        params = shared_model.player0.parameters()
+    elif args.train_mode == 1:
+        params = shared_model.player1.parameters()
+    else:
+        params = shared_model.parameters()
 
     if args.load_model_dir is not None:
         saved_state = torch.load(

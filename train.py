@@ -32,7 +32,12 @@ def train(rank, args, shared_model, optimizer, train_modes, n_iters, env=None):
     if env is None:
         env = create_env(env_name, args)
 
-    params = shared_model.parameters()
+    if args.train_mode == 0:
+        params = shared_model.player0.parameters()
+    elif args.train_mode == 1:
+        params = shared_model.player1.parameters()
+    else:
+        params = shared_model.parameters()
     if optimizer is None:
         if args.optimizer == 'RMSprop':
             optimizer = optim.RMSprop(params, lr=args.lr)
