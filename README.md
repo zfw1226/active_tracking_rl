@@ -101,7 +101,7 @@ To train the baselines, you only need reset `--env` to `UnrealTrack-DuelingRoomR
 ## Evaluation
 You can evaluate the tracker by running:
 ```
-python gym_eval.py --env {ENV_NAME} --network tat-cnn-lstm --rnn-out 256 --load-tracker {PATH_TO_YOUR_TRACKER} 
+python gym_eval.py --env {ENV_NAME} --network cnn-lstm --gray --rescale --rnn-out 256 --load-tracker {PATH_TO_YOUR_TRACKER} 
 ```
 The ``ENV_NAME`` we used to evaluate in the paper is: 
 - `UnrealTrack-DuelingRoomNav-DiscreteColor-v4` (DR Room), 
