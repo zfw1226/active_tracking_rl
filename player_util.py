@@ -10,14 +10,13 @@ class Agent(object):
     def __init__(self, model, env, args, state, device):
         self.model = model
         self.env = env
-        self.num_agents = len(env.action_space)
+        self.num_agents = len(env.observation_space)
         if 'continuous' in args.network:
-            if type(env.action_space) == list:
-                self.action_high = [env.action_space[i].high for i in range(self.num_agents)]
-                self.action_low = [env.action_space[i].low for i in range(self.num_agents)]
-            else:
-                self.action_high = [env.action_space.high, env.action_space.high]
-                self.action_low = [env.action_space.low, env.action_space.low]
+            self.action_high = [env.action_space[i].high for i in range(self.num_agents)]
+            self.action_low = [env.action_space[i].low for i in range(self.num_agents)]
+            self.dim_action = env.action_space[0].shape[0]
+        else:
+            self.dim_action = 1
 
         self.eps_len = 0
         self.args = args
@@ -119,9 +118,10 @@ class Agent(object):
         policy_loss = torch.zeros(self.num_agents, 1).to(self.device)
         value_loss = torch.zeros(self.num_agents, 1).to(self.device)
         pred_loss = torch.zeros(1, 1).to(self.device)
-        entropies = torch.zeros(self.num_agents, 1).to(self.device)
-        w_entropies = float(self.args.entropy)*torch.ones(self.num_agents, 1).to(self.device)
-        w_entropies[1][0] = float(self.w_entropy_target)
+        entropies = torch.zeros(self.num_agents, self.dim_action).to(self.device)
+        w_entropies = float(self.args.entropy)*torch.ones(self.num_agents, self.dim_action).to(self.device)
+        if self.num_agents > 1:
+            w_entropies[1][0] = float(self.w_entropy_target)
         R = Variable(R, requires_grad=True).to(self.device)
         gae = torch.zeros(1, 1).to(self.device)
         l1_loss = L1Loss()
@@ -141,7 +141,8 @@ class Agent(object):
 
         self.model.zero_grad()
         loss_tracker = (policy_loss[0] + 0.5 * value_loss[0]).mean()
-        loss_target = (policy_loss[1] + 0.5 * value_loss[1]).mean()
+        if self.num_agents > 1:
+            loss_target = (policy_loss[1] + 0.5 * value_loss[1]).mean()
 
         if training_mode == 0:  # train tracker
             loss = loss_tracker
