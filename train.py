@@ -90,9 +90,9 @@ def train(rank, args, shared_model, optimizer, train_modes, n_iters, env=None):
         policy_loss, value_loss, entropies, pred_loss = player.optimize(params, optimizer, shared_model, training_mode, gpu_id)
 
         for i in range(min(player.num_agents, 3)):
-            writer.add_scalar('train/policy_loss_'+str(i), policy_loss[i], player.n_steps)
+            writer.add_scalar('train/policy_loss_'+str(i), policy_loss[i].mean(), player.n_steps)
             writer.add_scalar('train/value_loss_'+str(i), value_loss[i], player.n_steps)
-            writer.add_scalar('train/entropies'+str(i), entropies[i], player.n_steps)
+            writer.add_scalar('train/entropies'+str(i), entropies[i].mean(), player.n_steps)
         writer.add_scalar('train/pred_R_loss', pred_loss, player.n_steps)
         writer.add_scalar('train/ave_reward', ave_reward[0] - ave_reward_longterm[0], player.n_steps)
         writer.add_scalar('train/mode', training_mode, player.n_steps)
