@@ -10,8 +10,7 @@ import math
 
 
 def build_model(obs_space, action_space, args, device):
-    name = args.network
-    model = A3C_Dueling(obs_space, action_space, args.rnn_out, name, args.stack_frames, device)
+    model = A3C_Dueling(obs_space, action_space, args, device)
     model.train()
     return model
 
@@ -211,50 +210,48 @@ class TAT(torch.nn.Module):  # Tracker-aware Target
 
 
 class A3C_Dueling(torch.nn.Module):
-    def __init__(self, obs_space, action_space, rnn_out=128, head_name='cnn_lstm',  stack_frames=1, device=None):
+    def __init__(self, obs_space, action_space, args, device=None):
         super(A3C_Dueling, self).__init__()
-        if type(obs_space) == list:
-            obs_space_0 = obs_space[0].shape
-            obs_space_1 = obs_space[1].shape
-        else:
-            obs_space_0 = obs_space_1 = obs_space.shape
-        if type(action_space) == list:
-            action_space_0 = action_space[0]
-            action_space_1 = action_space[1]
-        else:
-            action_space_0 = action_space_1 = action_space
-        self.head_name = head_name
-        if 'continuous' in self.head_name:
+        self.num_agents = len(obs_space)
+        obs_shapes = [obs_space[i].shape for i in range(self.num_agents)]
+        stack_frames = args.stack_frames
+        rnn_out = args.rnn_out
+        head_name = args.network
+        self.single = args.single
+        self.device = device
+        if 'continuous' in head_name:
             self.continuous = True
-            self.action_dim_tracker = action_space_1.shape[0]
+            self.action_dim_tracker = action_space[0].shape[0]
         else:
             self.continuous = False
-            self.action_dim_tracker = action_space_1.n
-        self.player0 = A3C(obs_space_1, action_space_1, rnn_out, head_name, stack_frames, device=device)
-
-        if 'tat' in head_name:
-            self.tat = True
-            self.player1 = TAT(obs_space_0, action_space_0, rnn_out,
-                               head_name, stack_frames*2, self.action_dim_tracker, device=device)
-        else:
-            self.tat = False
-            self.player1 = A3C(obs_space_0, action_space_0, rnn_out, head_name, stack_frames, device=device)
-        self.device = device
+            self.action_dim_tracker = action_space[0].n
+        self.player0 = A3C(obs_shapes[0], action_space[0], rnn_out, head_name, stack_frames, device=device)
+        if not self.single:
+            if 'tat' in head_name:
+                self.tat = True
+                self.player1 = TAT(obs_shapes[1], action_space[1], rnn_out,
+                                   head_name, stack_frames*2, self.action_dim_tracker, device=device)
+            else:
+                self.tat = False
+                self.player1 = A3C(obs_shapes[1], action_space[1], rnn_out, head_name, stack_frames, device=device)
 
     def forward(self, inputs, test=False):
         states, (hx, cx) = inputs
 
         # run tracker
-        value0, action_0, entropy_0, log_prob_0, (hx0, cx0) = self.player0((states[0], (hx[:1], cx[:1])), test)
-        if self.continuous:  # onehot action
-            action2target = torch.Tensor(action_0.squeeze())
-        else:
-            action2target = torch.zeros(self.action_dim_tracker)
-            action2target[action_0] = 1
+        value0, action_0, entropy_0, log_prob_0, (hx_0, cx_0) = self.player0((states[0], (hx[:1], cx[:1])), test)
+
+        if self.single:
+            return value0, [action_0], entropy_0, log_prob_0, (hx_0, cx_0), 0
 
         # run target
         R_pred = 0
         if self.tat:
+            if self.continuous:  # onehot action
+                action2target = torch.Tensor(action_0.squeeze())
+            else:
+                action2target = torch.zeros(self.action_dim_tracker)
+                action2target[action_0] = 1
             state_target = torch.cat((states[0], states[1]), 0)
             value1, action_1, entropy_1, log_prob_1, (hx1, cx1), R_pred = self.player1(
                 (state_target, (hx[1:], cx[1:]), action2target.to(self.device)), test)
@@ -262,13 +259,14 @@ class A3C_Dueling(torch.nn.Module):
             value1, action_1, entropy_1, log_prob_1, (hx1, cx1) = self.player1((states[1], (hx[1:], cx[1:])), test)
         entropies = torch.cat([entropy_0, entropy_1])
         log_probs = torch.cat([log_prob_0, log_prob_1])
-        if self.continuous:  # continuous
+        hx_out = torch.cat((hx_0, hx1))
+        cx_out = torch.cat((hx_0, cx1))
+        if self.continuous:
             action_0 = action_0.squeeze()
             entropies = entropies.sum(-1)
             log_probs = log_probs.sum(-1)
             log_probs = log_probs.unsqueeze(1)
-        hx_out = torch.cat((hx0, hx1))
-        cx_out = torch.cat((cx0, cx1))
+
         entropies = entropies.unsqueeze(1)
 
         return torch.cat([value0, value1]), [action_0, action_1], entropies, log_probs, (hx_out, cx_out), R_pred
