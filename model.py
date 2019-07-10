@@ -36,20 +36,20 @@ def sample_action(continuous, mu_multi, sigma_multi, device, test=False):
         action = torch.clamp(action, -1.0, 1.0)
         entropy = 0.5 * ((sigma * 2 * pi.expand_as(sigma)).log() + 1)  # 0.5 * (log(2*pi*sigma) + 1
         log_prob = (prob + 1e-6).log()
-        action_env_multi = action.cpu().numpy()
+        action_env = action.cpu().numpy()
     else:  # discrete
         logit = mu_multi
         prob = F.softmax(logit, dim=1)
         log_prob = F.log_softmax(logit, dim=1)
-        entropy = -(log_prob * prob).sum(1)
+        entropy = -(log_prob * prob).sum(1, keepdim=True)
         if test:
             action = prob.max(1)[1].data
         else:
             action = prob.multinomial(1).data
             log_prob = log_prob.gather(1, Variable(action))
-        action_env_multi = np.squeeze(action.cpu().numpy())
+        action_env = np.squeeze(action.cpu().numpy())
 
-    return action_env_multi, entropy, log_prob
+    return action_env, entropy, log_prob
 
 
 class ValueNet(nn.Module):
@@ -261,12 +261,5 @@ class A3C_Dueling(torch.nn.Module):
         log_probs = torch.cat([log_prob_0, log_prob_1])
         hx_out = torch.cat((hx_0, hx1))
         cx_out = torch.cat((hx_0, cx1))
-        if self.continuous:
-            action_0 = action_0.squeeze()
-            entropies = entropies.sum(-1)
-            log_probs = log_probs.sum(-1)
-            log_probs = log_probs.unsqueeze(1)
-
-        entropies = entropies.unsqueeze(1)
 
         return torch.cat([value0, value1]), [action_0, action_1], entropies, log_probs, (hx_out, cx_out), R_pred
