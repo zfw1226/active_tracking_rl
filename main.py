@@ -33,7 +33,7 @@ parser.add_argument('--network', default='tat-maze-lstm', metavar='M', help='con
 parser.add_argument('--aux', default='reward', metavar='A', help='auxiliary task: reward/none')
 parser.add_argument('--gpu-ids', type=int, default=-1, nargs='+', help='GPUs to use [-1 CPU only] (default: -1)')
 parser.add_argument('--obs', default='img', metavar='O', help='img or vector')
-parser.add_argument('--single', dest='single', action='store_true', help='single agent')
+parser.add_argument('--single', dest='single', action='store_true', help='run on single agent env')
 parser.add_argument('--gray', dest='gray', action='store_true', help='gray image')
 parser.add_argument('--crop', dest='crop', action='store_true', help='crop image')
 parser.add_argument('--inv', dest='inv', action='store_true', help='inverse image')
@@ -46,7 +46,7 @@ parser.add_argument('--stack-frames', type=int, default=1, metavar='SF', help='C
 parser.add_argument('--input-size', type=int, default=80, metavar='IS', help='input image size')
 parser.add_argument('--rnn-out', type=int, default=128, metavar='LO', help='rnn output size')
 parser.add_argument('--sleep-time', type=int, default=0, metavar='ST', help='seconds to sleep after a process launched')
-parser.add_argument('--max-step', type=int, default=1500000, metavar='MS', help='max learning steps')
+parser.add_argument('--max-step', type=int, default=150000, metavar='MS', help='max learning steps')
 parser.add_argument('--init-step', type=int, default=-1, metavar='IS', help='steps not update target at beginning')
 # Based on
 # https://github.com/dgriff777/a3c_continuous
