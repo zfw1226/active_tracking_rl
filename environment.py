@@ -51,13 +51,14 @@ class Rescale(gym.Wrapper):
     def _reset(self):
         ob = self.env.reset()
 
+        # rescale image to [-1, 1]
+        ob = self.rescale(np.float32(ob))
+
         # invert image
         self.inv_img = self.choose_rand_seed() and self.args.inv
         if self.inv_img:
             ob = 255 - ob
 
-        # rescale image to [-1, 1]
-        ob = self.rescale(np.float32(ob))
         return ob
 
     def _step(self, action):
