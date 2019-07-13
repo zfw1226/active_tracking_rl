@@ -122,7 +122,8 @@ def test(args, shared_model, train_modes, n_iters):
         torch.save(player.model.state_dict(), model_dir)
         if args.split:
             torch.save(player.model.player0.state_dict(), tracker_model_dir)
-            torch.save(player.model.player1.state_dict(), target_model_dir)
+            if not args.single:
+                torch.save(player.model.player1.state_dict(), target_model_dir)
 
         time.sleep(args.sleep_time)
         if n_iter > args.max_step:
