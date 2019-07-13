@@ -48,7 +48,7 @@ class Rescale(gym.Wrapper):
                     ) / self.obs_range) + self.new_mind
         return new_obs
 
-    def _reset(self):
+    def reset(self):
         ob = self.env.reset()
 
         # rescale image to [-1, 1]
@@ -61,7 +61,7 @@ class Rescale(gym.Wrapper):
 
         return ob
 
-    def _step(self, action):
+    def step(self, action):
         ob, rew, done, info = self.env.step(action)
         if self.inv_img:
             ob = 255 - ob
