@@ -57,7 +57,7 @@ class Rescale(gym.Wrapper):
         # invert image
         self.inv_img = self.choose_rand_seed() and self.args.inv
         if self.inv_img:
-            ob = 255 - ob
+            ob = self.mx_d - ob
 
         return ob
 
