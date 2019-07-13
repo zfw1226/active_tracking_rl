@@ -63,9 +63,10 @@ class Rescale(gym.Wrapper):
 
     def step(self, action):
         ob, rew, done, info = self.env.step(action)
-        if self.inv_img:
-            ob = 255 - ob
+
         ob = self.rescale(np.float32(ob))
+        if self.inv_img:
+            ob = self.mx_d - ob
         return ob, rew, done, info
 
     def choose_rand_seed(self):
