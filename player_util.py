@@ -105,7 +105,7 @@ class Agent(object):
         self.cxs = Variable(self.cxs.data)
         self.hxs = Variable(self.hxs.data)
 
-    def optimize(self, params, optimizer, shared_model, training_mode, gpu_id):
+    def optimize(self, params, optimizer, shared_model, training_mode, device_share):
         R = torch.zeros(self.num_agents, 1).to(self.device)
         if not self.done:
             # predict value
@@ -155,7 +155,7 @@ class Agent(object):
         loss.backward()
 
         torch.nn.utils.clip_grad_norm_(params, 50)
-        ensure_shared_grads(self.model, shared_model, gpu=gpu_id >= 0)
+        ensure_shared_grads(self.model, shared_model, device=device_share)
 
         optimizer.step()
         self.clear_actions()

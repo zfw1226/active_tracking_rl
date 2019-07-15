@@ -27,8 +27,9 @@ def train(rank, args, shared_model, optimizer, train_modes, n_iters, env=None):
     if gpu_id >= 0:
         torch.cuda.manual_seed(args.seed + rank)
         device = torch.device('cuda:' + str(gpu_id))
+        device_share = torch.device('cuda:' + str(args.gpu_ids[-1]))
     else:
-        device = torch.device('cpu')
+        device = device_share = torch.device('cpu')
     if env is None:
         env = create_env(env_name, args)
 
@@ -87,7 +88,7 @@ def train(rank, args, shared_model, optimizer, train_modes, n_iters, env=None):
         # 0: tracker 1: target -1:joint all
         training_mode = train_modes[rank]
 
-        policy_loss, value_loss, entropies, pred_loss = player.optimize(params, optimizer, shared_model, training_mode, gpu_id)
+        policy_loss, value_loss, entropies, pred_loss = player.optimize(params, optimizer, shared_model, training_mode, device_share)
 
         for i in range(min(player.num_agents, 3)):
             writer.add_scalar('train/policy_loss_'+str(i), policy_loss[i].mean(), player.n_steps)
