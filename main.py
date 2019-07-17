@@ -56,16 +56,20 @@ if __name__ == '__main__':
     args = parser.parse_args()
     torch.manual_seed(args.seed)
     if args.gpu_ids == -1:
+        torch.manual_seed(args.seed)
         args.gpu_ids = [-1]
-        device = torch.device('cpu')
+        device_share = torch.device('cpu')
     else:
         torch.cuda.manual_seed(args.seed)
         mp.set_start_method('spawn')
-        device = torch.device('cuda:' + str(args.gpu_ids[-1]))
+        if len(args.gpu_ids) > 1:
+            device_share = torch.device('cpu')
+        else:
+            device_share = torch.device('cuda:' + str(args.gpu_ids[-1]))
     env = create_env(args.env, args)
 
     shared_model = build_model(
-        env.observation_space, env.action_space, args, device).to(device)
+        env.observation_space, env.action_space, args, device_share).to(device_share)
 
     if args.train_mode == 0:
         params = shared_model.player0.parameters()

@@ -155,7 +155,7 @@ class Agent(object):
         loss.backward()
 
         torch.nn.utils.clip_grad_norm_(params, 50)
-        ensure_shared_grads(self.model, shared_model, device=device_share)
+        ensure_shared_grads(self.model, shared_model, self.device, device_share)
 
         optimizer.step()
         self.clear_actions()

@@ -33,14 +33,15 @@ def norm_col_init(weights, std=1.0):
     return x
 
 
-def ensure_shared_grads(model, shared_model, device='cpu'):
+def ensure_shared_grads(model, shared_model, device, device_share):
+    diff_device = device!=device_share
     for param, shared_param in zip(model.parameters(), shared_model.parameters()):
-        if shared_param.grad is not None:
+        if shared_param.grad is not None and not diff_device:
             return
-        if param.grad is None:
-            shared_param._grad = None
-            continue
-        shared_param._grad = param.grad.to(device)
+        elif not diff_device:
+            shared_param._grad = param.grad
+        else:
+            shared_param._grad = param.grad.to(device_share)
 
 
 def weights_init(m):

@@ -27,7 +27,10 @@ def train(rank, args, shared_model, optimizer, train_modes, n_iters, env=None):
     if gpu_id >= 0:
         torch.cuda.manual_seed(args.seed + rank)
         device = torch.device('cuda:' + str(gpu_id))
-        device_share = torch.device('cuda:' + str(args.gpu_ids[-1]))
+        if len(args.gpu_ids) > 1:
+            device_share = torch.device('cpu')
+        else:
+            device_share = torch.device('cuda:' + str(args.gpu_ids[-1]))
     else:
         device = device_share = torch.device('cpu')
     if env is None:
