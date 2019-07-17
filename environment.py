@@ -123,11 +123,12 @@ class frame_stack(gym.Wrapper):
     def __init__(self, env, args):
         super(frame_stack, self).__init__(env)
         self.stack_frames = args.stack_frames
-        self.num_agents = len(self.observation_space)
-        self.frames = [deque([], maxlen=self.stack_frames) for i in range(self.num_agents)]
+        self.max_num_agents = len(self.observation_space)
+        self.frames = [deque([], maxlen=self.stack_frames) for i in range(self.max_num_agents)]
 
     def reset(self):
         ob = self.env.reset()
+        self.num_agents = len(ob)
         ob = np.float32(ob)
         for i in range(self.num_agents):
             for _ in range(self.stack_frames):
@@ -140,7 +141,6 @@ class frame_stack(gym.Wrapper):
         for i in range(self.num_agents):
             self.frames[i].append(ob[i])
         ob = self.observation()
-
         if type(done) == list:
             done = all(done)
         return ob, rew, done, info
