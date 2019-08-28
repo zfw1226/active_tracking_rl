@@ -241,7 +241,7 @@ class A3C_Dueling(torch.nn.Module):
         # run tracker
         value0, action_0, entropy_0, log_prob_0, (hx_0, cx_0) = self.player0((states[0], (hx[:1], cx[:1])), test)
 
-        if self.single:
+        if self.single or states.shape[0] == 1:
             return value0, [action_0], entropy_0, log_prob_0, (hx_0, cx_0), 0
 
         # run target
