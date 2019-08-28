@@ -19,6 +19,7 @@ parser.add_argument('--load-model-dir', default=None, metavar='LMD', help='folde
 parser.add_argument('--load-tracker', default=None, metavar='LCD', help='folder to load trained tracker')
 parser.add_argument('--load-target', default=None, metavar='LCD', help='folder to load trained target')
 parser.add_argument('--log-dir', default='logs/', metavar='LG', help='folder to save logs')
+parser.add_argument('--csv', default=None, metavar='SV', help='write to csv')
 parser.add_argument('--render', dest='render', action='store_true', help='render test')
 parser.add_argument('--network', default='cnn-lstm', metavar='M', help='Model type to use')
 parser.add_argument('--stack-frames', type=int, default=1, metavar='SF', help='Choose whether to stack observations')
@@ -92,12 +93,10 @@ if __name__ == '__main__':
 
     try:
         player.model.eval()
+        player.env.seed(args.seed)
         for i_episode in range(args.num_episodes):
-            player.state = player.env.reset()
-            player.state = torch.from_numpy(player.state).float()
-            player.state = player.state.to(device)
-            player.eps_len = 0
-            reward_sum = np.zeros(2)
+            player.reset()
+            reward_sum = np.zeros(player.num_agents)
             while True:
                 # for visualization
                 if args.render:
@@ -125,7 +124,23 @@ if __name__ == '__main__':
                 player.eps_len, reward_sum, reward_mean, reward_std,
                 len_mean, len_std, reward_mean / len_mean, success_rate))
 
-
+        header = ['Env', 'Seed', 'R_mean', 'R_std', 'EL_mean', 'EL_std', 'S_rate']
+        rows = [{'Env': args.env, 'Seed': args.seed, 'R_mean': float(reward_mean[0]), 'R_std': float(reward_std[0]), 'EL_mean': len_mean,
+                 'EL_std': len_std, 'S_rate': float(success_rate)},
+                ]
+        if args.csv is not None:
+            import csv
+            if not os.path.exists(args.csv):
+                with open(args.csv, 'w') as f:
+                    f_csv = csv.DictWriter(f, header)
+                    f_csv.writeheader()
+                    f_csv.writerows(rows)
+            else:
+                with open(args.csv, 'a') as f:
+                    f_csv = csv.DictWriter(f, header)
+                    f_csv.writerows(rows)
+        player.env.close()
+        os._exit(0)
     except KeyboardInterrupt:
         print("Shutting down")
         player.env.close()
