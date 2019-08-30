@@ -57,7 +57,7 @@ def test(args, shared_model, train_modes, n_iters):
         for i_episode in range(args.test_eps):
             player.model.load_state_dict(shared_model.state_dict())
             player.env.seed(seed)
-            seed += 1
+            # seed += 1
             player.reset()
             reward_sum_ep = np.zeros(player.num_agents)
             fps_counter = 0
