@@ -28,9 +28,6 @@ class Track1v1Env(gym.Env):
         self.level = level
         # Size of the partial observable window
         self.pob_size = pob_size
-        # Maze: 0: free space, 1: wall
-        self.init_maze(self.map_type)
-
         self.render_trace = render_trace
         self.traces = []
         self.traces_relative = []
@@ -43,6 +40,9 @@ class Track1v1Env(gym.Env):
         self.live_display = live_display
 
         self.state = None
+
+        # Maze: 0: free space, 1: wall
+        self.init_maze(self.map_type)
 
         # Action space
         tracker_action_space = self.define_action(self.action_type)
@@ -57,9 +57,8 @@ class Track1v1Env(gym.Env):
         # nav
         self.Target = []
         for i in range(self.num_agents-1):
-            if 'Nav' in self.target_mode:
-                random_th = 0
-                self.Target.append(Navigator(self.action_space[i+1], self.maze_generator, random_th))
+            if 'Nav' in self.target_mode or 'RPF' in self.target_mode:
+                self.Target.append(Navigator(self.action_space[i+1], self.maze_generator))
             if 'Ram' in self.target_mode:
                 self.Target.append(RamAgent(self.action_space[i+1]))
 
@@ -81,7 +80,7 @@ class Track1v1Env(gym.Env):
         for i in range(self.num_agents - 1):
             if 'Ram' in self.target_mode:
                 action[i+1] = self.Target[i].step()
-            if 'Nav' in self.target_mode:
+            if 'Nav' in self.target_mode or 'RPF' in self.target_mode:
                 action[i+1], goal = self.Target[i].step(old_state[i + 1], self.maze_generator, None)
 
         for i in range(self.num_agents):
@@ -145,6 +144,10 @@ class Track1v1Env(gym.Env):
         if 'Ram' in self.target_mode:
             for i in range(self.num_agents-1):
                 self.Target[i].reset()
+        if 'RPF' in self.target_mode:
+            for i in range(self.num_agents-1):
+                self.Target[i].reset(self.init_states[i+1], self.goal_states[i+1], self.maze_generator)
+
         self.distance = np.sum(np.abs(np.array(self.state[0]) - np.array(self.state[1])))
         self.C_reward = np.zeros(self.num_agents)
         self.C_step = 0
@@ -157,7 +160,7 @@ class Track1v1Env(gym.Env):
         self.traces = [self.init_states[0]]
         self.traces_relative = [np.array(self.init_states[i]) - np.array(self.init_states[0]) for i in range(self.num_agents)]
         obs = self._get_obs()
-        if 'Nav' in self.target_mode or 'Ram' in self.target_mode:
+        if 'Nav' in self.target_mode or 'Ram' in self.target_mode or 'RPF' in self.target_mode:
             obs = obs[:2]
         return obs
 
@@ -226,8 +229,10 @@ class Track1v1Env(gym.Env):
             self.maze_generator = RandomBlockMazeGenerator(maze_size=80, obstacle_ratio=0)
         self.maze = np.array(self.maze_generator.get_maze())
         self.maze_size = self.maze.shape
-        self.init_states = self.maze_generator.sample_close_states(self.num_agents, 1)
+        if 'RPF' in self.target_mode:
+            self.maze_generator.static_goals()
         self.goal_states = self.maze_generator.sample_goal(self.num_agents)
+        self.init_states = self.maze_generator.sample_close_states(self.num_agents, 1)
         while self.goal_test(self.init_states[0]):  # Goal check
             self.goal_states = self.maze_generator.sample_goal(self.num_agents)
 

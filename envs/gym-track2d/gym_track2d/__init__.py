@@ -2,7 +2,7 @@ from gym.envs.registration import register
 
 for map_name in ['Maze', 'Block', 'Empty']:
     for obs in ['Full', 'Partial']:
-        for target in ['Adv', 'PZR', 'Nav', 'Ram']:
+        for target in ['Adv', 'PZR', 'Nav', 'Ram', 'RPF']:
                 for level in range(2):
                     entry_point = 'gym_track2d.envs:Track1v1Env'
                     register(

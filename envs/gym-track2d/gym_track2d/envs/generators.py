@@ -46,7 +46,8 @@ class MazeGenerator(object):
                 goal_states.append(list(free_space[idxs[i]]))
         else:
             self.vector = (self.vector+1) % len(self.candidate_goals)
-            goal_states.append(self.candidate_goals[self.vector])
+            for i in range(num):
+                goal_states.append(self.candidate_goals[self.vector])
         return goal_states
 
     def sample_close_states(self, num=1, max_distance=1):

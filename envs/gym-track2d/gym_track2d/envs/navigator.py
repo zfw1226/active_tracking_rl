@@ -3,7 +3,7 @@ import numpy as np
 
 
 class Navigator(object):
-    def __init__(self, action_space, maze_generator, random_th=0.7):
+    def __init__(self, action_space, maze_generator, random_th=0.):
         self.all_actions = list(range(action_space.n))
         self.maze_generator = maze_generator
         self.random_th = random_th
