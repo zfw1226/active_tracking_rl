@@ -98,11 +98,8 @@ class Track1v1Env(gym.Env):
 
         r_track = 1 - 2*distance/max_distance
         r_track = max(r_track, -1)  # [-1, 1]
-        if 'PZR' in self.target_mode:
-            r_target = -r_track - max(distance - max_distance, 0)/max_distance
-            r_target = max(r_target, -1)
-        else:
-            r_target = -r_track
+        r_target = -r_track - self.w_p * max(distance - max_distance, 0)/max_distance
+        r_target = max(r_target, -1)
         rewards[0] = r_track
         rewards[1] = r_target
 
@@ -138,15 +135,21 @@ class Track1v1Env(gym.Env):
         # Reset maze
         self.init_maze(self.map_type)
         self.state = self.init_states
-        if 'Nav' in self.target_mode:
+        # set target
+        if 'Nav' in self.target_mode or 'RPF' in self.target_mode:
             for i in range(self.num_agents-1):
                 self.Target[i].reset(self.init_states[i+1], self.goal_states[i+1], self.maze_generator)
         if 'Ram' in self.target_mode:
             for i in range(self.num_agents-1):
                 self.Target[i].reset()
-        if 'RPF' in self.target_mode:
-            for i in range(self.num_agents-1):
-                self.Target[i].reset(self.init_states[i+1], self.goal_states[i+1], self.maze_generator)
+
+        # set target reward
+        if self.target_mode == 'PZR':
+            self.w_p = 1
+        elif self.target_mode == 'Far':
+            self.w_p = -0.5
+        else:
+            self.w_p = 0
 
         self.distance = np.sum(np.abs(np.array(self.state[0]) - np.array(self.state[1])))
         self.C_reward = np.zeros(self.num_agents)
