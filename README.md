@@ -1,8 +1,8 @@
-# AD-VAT
+# Towards Distraction-Robust Active Visual Tracking
 This repository is the code for 
 [Towards Distraction-Robust Active Visual Tracking (ICML 2021)](https://icml.cc/Conferences/2021/ScheduleMultitrack?event=8904). 
 
-It contains the code for training/testing(Pytorch).
+It contains the code for training/testing (Pytorch).
 The 3D environments are hosted in [gym-unrealcv](https://github.com/zfw1226/gym-unrealcv).
 
 ![framework](./figs/game.PNG)
