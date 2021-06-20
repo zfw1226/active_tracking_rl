@@ -10,7 +10,8 @@ from player_util import Agent
 from tensorboardX import SummaryWriter
 import os
 import time
-
+from random import choice, randint
+from utils_basic import load_opponent
 
 def train(rank, args, shared_model, optimizer, train_modes, n_iters, env=None):
     n_iter = 0
@@ -27,29 +28,25 @@ def train(rank, args, shared_model, optimizer, train_modes, n_iters, env=None):
     if gpu_id >= 0:
         torch.cuda.manual_seed(args.seed + rank)
         device = torch.device('cuda:' + str(gpu_id))
-        if len(args.gpu_ids) > 1:
-            device_share = torch.device('cpu')
-        else:
-            device_share = torch.device('cuda:' + str(args.gpu_ids[-1]))
     else:
-        device = device_share = torch.device('cpu')
-    if env is None:
-        env = create_env(env_name, args)
+        device = torch.device('cpu')
 
-    if args.train_mode == 0:
-        params = shared_model.player0.parameters()
-    elif args.train_mode == 1:
-        params = shared_model.player1.parameters()
-    else:
-        params = shared_model.parameters()
+    # if args.gpu >= 0:
+    device_share = torch.device('cpu')
+
+    if env == None:
+        env = create_env(env_name, args, rank)
+
+    params = shared_model.parameters()
     if optimizer is None:
         if args.optimizer == 'RMSprop':
             optimizer = optim.RMSprop(params, lr=args.lr)
         if args.optimizer == 'Adam':
             optimizer = optim.Adam(params, lr=args.lr)
 
-    env.seed(args.seed)
     player = Agent(None, env, args, None, device)
+    player.rank = rank
+    player.init_memory()
     player.w_entropy_target = args.entropy_target
     player.gpu_id = gpu_id
 
@@ -58,22 +55,36 @@ def train(rank, args, shared_model, optimizer, train_modes, n_iters, env=None):
         player.env.observation_space, player.env.action_space, args, device)
     player.model = player.model.to(device)
     player.model.train()
-
+    if args.fix:
+        env.seed(args.seed)
+    else:
+        env.seed(randint(0, args.seed))
     player.reset()
     reward_sum = torch.zeros(player.num_agents).to(device)
     reward_sum_org = np.zeros(player.num_agents)
     ave_reward = np.zeros(2)
     ave_reward_longterm = np.zeros(2)
     count_eps = 0
+    if args.old is not None:
+        opponent_list = os.listdir(args.old)
+
     while True:
         # sys to the shared model
         player.model.load_state_dict(shared_model.state_dict())
 
         if player.done:
+            if args.fix:
+                env.seed(args.seed)
+            else:
+                env.seed(randint(0, args.seed))
             player.reset()
             reward_sum = torch.zeros(player.num_agents).to(device)
             reward_sum_org = np.zeros(player.num_agents)
             count_eps += 1
+            if args.old is not None:
+                # update saved opponent
+                saved_opponent = load_opponent(os.path.join(args.old, choice(opponent_list)))
+                player.teacher.load_state_dict(saved_opponent, strict=False)
 
         player.update_rnn_hiden()
         t0 = time.time()
@@ -82,28 +93,34 @@ def train(rank, args, shared_model, optimizer, train_modes, n_iters, env=None):
             reward_sum += player.reward
             reward_sum_org += player.reward_org
             if player.done:
-                for j, r_i in enumerate(reward_sum):
-                    writer.add_scalar('train/reward_' + str(j), r_i, player.n_steps)
+                for i, r_i in enumerate(reward_sum):
+                    if i ==2:
+                        writer.add_scalar('train/reward_' + str(i), reward_sum[2:].sum(), player.n_steps)
+                        if args.norm_reward:
+                            writer.add_scalar('train/reward_org_' + str(i), reward_sum_org[2:].sum(), player.n_steps)
+                        break
+                    else:
+                        writer.add_scalar('train/reward_' + str(i), r_i, player.n_steps)
+                        if args.norm_reward:
+                            writer.add_scalar('train/reward_org_' + str(i), reward_sum_org[i].sum(), player.n_steps)
                 break
         fps = i / (time.time() - t0)
 
-        # cfg training mode
-        # 0: tracker 1: target -1:joint all
         training_mode = train_modes[rank]
-
-        policy_loss, value_loss, entropies, pred_loss = player.optimize(params, optimizer, shared_model, training_mode, device_share)
+        policy_loss, value_loss, entropies, pred_loss, lr_weight = player.optimize(params, optimizer, shared_model, training_mode, device_share)
 
         for i in range(min(player.num_agents, 3)):
-            writer.add_scalar('train/policy_loss_'+str(i), policy_loss[i].mean(), player.n_steps)
+            writer.add_scalar('train/policy_loss_'+str(i), policy_loss[i], player.n_steps)
             writer.add_scalar('train/value_loss_'+str(i), value_loss[i], player.n_steps)
-            writer.add_scalar('train/entropies'+str(i), entropies[i].mean(), player.n_steps)
-        writer.add_scalar('train/pred_R_loss', pred_loss, player.n_steps)
+            writer.add_scalar('train/entropies'+str(i), entropies[i], player.n_steps)
+            writer.add_scalar('train/lr_weights' + str(i), lr_weight[i], player.n_steps)
+        for i in range(len(pred_loss)):
+            writer.add_scalar('train/pred_R_loss_'+str(i), pred_loss[i], player.n_steps)
         writer.add_scalar('train/ave_reward', ave_reward[0] - ave_reward_longterm[0], player.n_steps)
         writer.add_scalar('train/mode', training_mode, player.n_steps)
         writer.add_scalar('train/fps', fps, player.n_steps)
 
-        n_iter += 1
-        n_iters[rank] = n_iter
+        n_iters[rank] = player.n_steps
 
         if train_modes[rank] == -100:
             env.close()

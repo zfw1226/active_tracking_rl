@@ -3,21 +3,19 @@ from setproctitle import setproctitle as ptitle
 import numpy as np
 import torch
 from environment import create_env
-from utils import setup_logger
+from utils_basic import setup_logger, check_path, check_disk
 from player_util import Agent
 import time
 import logging
 from tensorboardX import SummaryWriter
 import os
 from model import build_model
-from utils import cv2_show
 
-
-def test(args, shared_model, train_modes, n_iters):
+def test(args, shared_model, optimizer, train_modes, n_iters):
     ptitle('Test Agent')
     n_iter = 0
     writer = SummaryWriter(os.path.join(args.log_dir, 'Test'))
-    gpu_id = args.gpu_ids[-1]
+    gpu_id = args.gpu
     log = {}
     setup_logger('{}_log'.format(args.env),
                  r'{0}/logger'.format(args.log_dir))
@@ -38,7 +36,7 @@ def test(args, shared_model, train_modes, n_iters):
         env = create_env(args.env, args)
     else:
         env = create_env(args.env_base, args)
-    env.seed(args.seed)
+    env.seed(args.seed_test)
     start_time = time.time()
     count_eps = 0
 
@@ -48,9 +46,7 @@ def test(args, shared_model, train_modes, n_iters):
         player.env.observation_space, player.env.action_space, args, device).to(device)
     player.model.eval()
     max_score = -100
-    seed = args.seed
-    last_iter = 0
-    iter_th = args.init_step
+    seed = args.seed_test
     while True:
         reward_sum = np.zeros(2)
         len_sum = 0
@@ -63,10 +59,12 @@ def test(args, shared_model, train_modes, n_iters):
             fps_counter = 0
             t0 = time.time()
             count_eps += 1
+            fps_all = []
             while True:
                 if args.render:
                     if 'Unreal' in args.env:
-                        cv2_show(env, False)
+                        env.render()
+                        # cv2_show(env, False)
                     else:
                         env.render()
                 player.action_test()
@@ -80,19 +78,10 @@ def test(args, shared_model, train_modes, n_iters):
                     for n in n_iters:
                         n_iter += n
 
-                    for rank in range(len(n_iters)):
-                        if n_iter < args.init_step:
-                            train_modes[rank] = 0
-                        elif args.train_mode == 2 and n_iter - last_iter > iter_th:
-                            train_modes[rank] = 1 - train_modes[rank]
-                            last_iter = n_iter
-                            iter_th = args.init_step if train_modes[rank]==0 else args.adv_step
-                        else:
-                            train_modes[rank] = args.train_mode
-
                     for i, r_i in enumerate(reward_sum_ep):
                         writer.add_scalar('test/reward'+str(i), r_i, n_iter)
 
+                    fps_all.append(fps)
                     writer.add_scalar('test/fps', fps, n_iter)
                     writer.add_scalar('test/eps_len', player.eps_len, n_iter)
                     break
@@ -101,33 +90,32 @@ def test(args, shared_model, train_modes, n_iters):
         len_mean = len_sum/args.test_eps
         reward_step = reward_sum / len_sum
         log['{}_log'.format(args.env)].info(
-            "Time {0}, ave eps reward {1}, ave eps length {2}, reward step {3}".
+            "Time {0}, ave eps reward {1}, ave eps length {2}, reward step {3}, FPS {4}".
             format(
                 time.strftime("%Hh %Mm %Ss",
                               time.gmtime(time.time() - start_time)),
-                ave_reward_sum, len_mean, reward_step))
+                np.around(ave_reward_sum, decimals=2), np.around(len_mean, decimals=2),
+                np.around(reward_step, decimals=2), np.around(np.mean(fps_all), decimals=2)))
 
         # save model
-        if ave_reward_sum[0] >= max_score:
-            print('Save best!')
-            max_score = ave_reward_sum[0]
-            model_dir = os.path.join(args.log_dir, 'all-best-{0}.dat'.format(n_iter))
-            tracker_model_dir = os.path.join(args.log_dir, 'tracker-best.dat'.format(n_iter))
-            target_model_dir = os.path.join(args.log_dir, 'target-best.dat'.format(n_iter))
+        if args.train_mode == 1:
+            new_score = ave_reward_sum[1]
         else:
-            model_dir = os.path.join(args.log_dir, 'all-new.dat'.format(args.env))
-            tracker_model_dir = os.path.join(args.log_dir, 'tracker-new.dat')
-            target_model_dir = os.path.join(args.log_dir, 'target-new.dat')
-
-        torch.save(player.model.state_dict(), model_dir)
-        if args.split:
-            torch.save(player.model.player0.state_dict(), tracker_model_dir)
-            if not args.single:
-                torch.save(player.model.player1.state_dict(), target_model_dir)
+            new_score = ave_reward_sum[0]
+        if new_score >= max_score:
+            print('save best!')
+            max_score = new_score
+            model_dir = os.path.join(args.log_dir, 'best-{}.pth'.format(str(n_iter//10000)))
+        else:
+            # model_dir = os.path.join(args.log_dir, 'new.pth')
+            model_dir = os.path.join(args.log_dir, 'new-{}.pth'.format(str(n_iter//10000)))
+        state_to_save = {"model": player.model.state_dict()}
+        torch.save(state_to_save, model_dir)
 
         time.sleep(args.sleep_time)
-        if n_iter > args.max_step:
-            env.close()
-            for id in range(0, args.workers):
+        if n_iter/1000 > args.max_step or check_disk('./') > 95:
+            print('Reach Max Step or Disk is full')
+            for id in range(len(train_modes)):
                 train_modes[id] = -100
+            # env.close()
             break
