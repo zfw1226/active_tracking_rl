@@ -127,6 +127,17 @@ If you found AD-VAT useful, please consider citing:
   year={2019},
   url={https://openreview.net/forum?id=HkgYmhR9KX},
   }
+
+  @article{zhong2021advat,
+  author={Zhong, Fangwei and Sun, Peng and Luo, Wenhan and Yan, Tingyun and Wang, Yizhou},
+  journal={IEEE Transactions on Pattern Analysis and Machine Intelligence}, 
+  title={AD-VAT+: An Asymmetric Dueling Mechanism for Learning and Understanding Visual Active Tracking}, 
+  year={2021},
+  volume={43},
+  number={5},
+  pages={1467-1482},
+  doi={10.1109/TPAMI.2019.2952590}
+  }
 ```
 
 # Contact
