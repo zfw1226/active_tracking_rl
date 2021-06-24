@@ -55,12 +55,25 @@ python main.py --model pos-act-lstm-novision --tracker tiny-ConvLSTM-att-lstm-la
 ## Evaluation
 You can evaluate the tracker by running:
 ```
-python gym_eval.py --model pos-act-lstm-none --tracker tiny-ConvLSTM-att-lstm-layer --env {ENV_NAME} --seed {NUM_DISTRACTOR} --rnn-out 256 --gpu-id 0 --pytrack none --num-episodes 100 --load-tracker {PATH_TO_YOUR_TRACKER} --early-done --rescale
+python gym_eval.py --model pos-act-lstm-none --tracker tiny-ConvLSTM-att-lstm-layer --env {ENV_NAME} --seed {NUM_DISTRACTOR} --rnn-out 256 --gpu-id 0 --pytrack none --num-episodes 100 --load-tracker {PATH_TO_YOUR_Tduration = 0.5RACKER} --early-done --rescale
 ```
 The ``ENV_NAME`` we used to evaluate in the paper is: 
 - `UnrealTrackMulti-FlexibleRoomNav-DiscreteColor-v1` (Simple Room), 
 - `UnrealTrackMulti-UrbanCityNav-DiscreteColor-v1` (Urban City), 
 - `UnrealTrackMulti-GarageNav-DiscreteColor-v0` (Parking Lot)
+
+<table>
+   <tr>
+<td><img src="./figs/room_13.gif" width="240" height="180"></td>
+<td><img src="./figs/urbancity_14.gif" width="240" height="180"></td>
+<td><img src="./figs/garage_22_short.gif" width="240" height="180"></td>
+   </tr>
+</table>
+
+<!-- ![room](./figs/room_13.gif)
+![city](./figs/urbancity_14.gif)
+![garage](./figs/garage_22_short.gif) -->
+
 
 # Visualization
 You could monitor the performance while training using `tensorboard`:
