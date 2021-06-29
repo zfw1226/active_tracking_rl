@@ -64,9 +64,9 @@ The ``ENV_NAME`` we used to evaluate in the paper is:
 
 <table>
    <tr>
-<td><img src="./figs/room_13.gif" width="240" height="180"></td>
-<td><img src="./figs/urbancity_14.gif" width="240" height="180"></td>
-<td><img src="./figs/garage_22_short.gif" width="240" height="180"></td>
+<td><img src="./figs/room.gif" width="240" height="180"></td>
+<td><img src="./figs/urbancity.gif" width="240" height="180"></td>
+<td><img src="./figs/garage.gif" width="240" height="180"></td>
    </tr>
 </table>
 
@@ -83,7 +83,7 @@ tensorboard --logdir {PATH_TO_LOGS}
 If you use the the default setting while training, `PATH_TO_LOGS` should be `logs/{ENV_NAME}/{DATE}`
 
 # Citation
-If you found AD-VAT useful, please consider citing:
+If you found this work useful, please consider citing:
 ```
 @inproceedings{zhong2021distraction,
 title={Towards Distraction-robust Active Visual Tracking},
