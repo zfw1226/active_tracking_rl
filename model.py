@@ -260,6 +260,6 @@ class A3C_Dueling(torch.nn.Module):
         entropies = torch.cat([entropy_0, entropy_1])
         log_probs = torch.cat([log_prob_0, log_prob_1])
         hx_out = torch.cat((hx_0, hx1))
-        cx_out = torch.cat((hx_0, cx1))
+        cx_out = torch.cat((cx_0, cx1))
 
         return torch.cat([value0, value1]), [action_0, action_1], entropies, log_probs, (hx_out, cx_out), R_pred
