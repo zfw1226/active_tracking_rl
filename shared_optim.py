@@ -71,7 +71,7 @@ class SharedRMSprop(optim.Optimizer):
 
                 if group['centered']:
                     grad_avg = state['grad_avg']
-                    grad_avg.mul_(alpha).add_(1 - alpha, grad)
+                    grad_avg.mul_(alpha).add_(grad, alpha = 1 - alpha)
                     avg = square_avg.addcmul(
                         -1, grad_avg, grad_avg).sqrt().add_(group['eps'])
                 else:
@@ -80,9 +80,9 @@ class SharedRMSprop(optim.Optimizer):
                 if group['momentum'] > 0:
                     buf = state['momentum_buffer']
                     buf.mul_(group['momentum']).addcdiv_(grad, avg)
-                    p.data.add_(-group['lr'], buf)
+                    p.data.add_(buf, alpha = -group['lr'])
                 else:
-                    p.data.addcdiv_(-group['lr'], grad, avg)
+                    p.data.addcdiv_( grad, avg, value = -group['lr'])
 
         return loss
 
@@ -152,8 +152,8 @@ class SharedAdam(optim.Optimizer):
                     grad = grad.add(group['weight_decay'], p.data)
 
                 # Decay the first and second moment running average coefficient
-                exp_avg.mul_(beta1).add_(1 - beta1, grad)
-                exp_avg_sq.mul_(beta2).addcmul_(1 - beta2, grad, grad)
+                exp_avg.mul_(beta1).add_(grad, alpha= 1 - beta1)
+                exp_avg_sq.mul_(beta2).addcmul_(grad, grad, value = 1 - beta2)
 
                 if amsgrad:
                     # Maintains the maximum of all 2nd moment running avg. till
@@ -171,6 +171,6 @@ class SharedAdam(optim.Optimizer):
                 step_size = group['lr'] * \
                     math.sqrt(bias_correction2) / bias_correction1
 
-                p.data.addcdiv_(-step_size, exp_avg, denom)
+                p.data.addcdiv_(exp_avg, denom, value = -step_size)
 
         return loss
