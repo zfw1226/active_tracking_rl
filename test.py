@@ -113,7 +113,7 @@ def test(args, shared_model, optimizer, train_modes, n_iters):
         torch.save(state_to_save, model_dir)
 
         time.sleep(args.sleep_time)
-        if n_iter/1000 > args.max_step or check_disk('./') > 95:
+        if n_iter/1000 > args.max_step or check_disk('./'):
             print('Reach Max Step or Disk is full')
             for id in range(len(train_modes)):
                 train_modes[id] = -100

@@ -127,7 +127,12 @@ def load_opponent(dir):
                       'tracker' not in name and 'aux' not in name}
     return saved_opponent
 
-def check_disk(dir='./'):
+def check_disk(dir='./', minimal_space=30): # check disk space, if less than minimal space, return True
     disk = os.statvfs(dir)
-    percent = (disk.f_blocks - disk.f_bfree) * 100 / (disk.f_blocks - disk.f_bfree + disk.f_bavail) + 1
-    return percent
+    # percent = (disk.f_blocks - disk.f_bfree) * 100 / (disk.f_blocks - disk.f_bfree + disk.f_bavail) + 1
+    free_space = disk.f_bsize * disk.f_bfree / 1024 / 1024 / 1024
+    if free_space > minimal_space:
+        return False
+    else:
+        print("Free space is less than or equal to 20 GB")
+        return True
