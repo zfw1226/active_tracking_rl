@@ -92,6 +92,7 @@ if __name__ == '__main__':
 
     shared_model = build_model(
         env.observation_space, env.action_space, args, device_share).to(device_share)
+    env.close()
     shared_model.share_memory()
 
     if args.load_model_dir is not None:
