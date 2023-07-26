@@ -55,7 +55,7 @@ python main.py --model pos-act-lstm-novision --tracker tiny-ConvLSTM-att-lstm-la
 ## Evaluation
 You can evaluate the tracker by running:
 ```
-python gym_eval.py --model pos-act-lstm-none --tracker tiny-ConvLSTM-att-lstm-layer --env {ENV_NAME} --seed {NUM_DISTRACTOR} --rnn-out 256 --gpu-id 0 --pytrack none --num-episodes 100 --load-tracker {PATH_TO_YOUR_Tduration = 0.5RACKER} --early-done --rescale
+python gym_eval.py --model pos-act-lstm-none --tracker tiny-ConvLSTM-att-lstm-layer --env {ENV_NAME} --seed {NUM_DISTRACTOR} --rnn-out 256 --gpu-id 0 --pytrack none --num-episodes 100 --load-tracker {PATH_TO_YOUR_TRACKER} --early-done --rescale
 ```
 The ``ENV_NAME`` we used to evaluate in the paper is: 
 - `UnrealTrackMulti-FlexibleRoomNav-DiscreteColor-v1` (Simple Room), 
