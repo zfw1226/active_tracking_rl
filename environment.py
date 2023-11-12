@@ -5,7 +5,8 @@ from collections import deque
 from cv2 import resize
 from gym.spaces.box import Box
 from random import choice
-
+from gym_unrealcv.envs.wrappers import time_dilation, early_done, monitor, agents, augmentation
+from gym_unrealcv.envs.tracking.baseline import PoseTracker, Nav2GoalAgent
 
 def create_env(env_id, args):
     if '2D' in env_id:
@@ -13,6 +14,11 @@ def create_env(env_id, args):
     if 'Unreal' in env_id:
         import gym_unrealcv
     env = gym.make(env_id)
+    if 'General' in env_id:
+        env = time_dilation.TimeDilationWrapper(env, 10)
+        env = early_done.EarlyDoneWrapper(env, 30)
+        env = augmentation.RandomPopulationWrapper(env, 6, 6, random_target=False)
+        env = agents.NavAgents(env, mask_agent=True)
     # config observation pre-processing
     if args.single:
         env = listspace(env)
