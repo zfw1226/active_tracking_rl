@@ -1,3 +1,5 @@
+
+
 # AD-VAT
 This repository is the code for 
 [AD-VAT: An Asymmetric Dueling mechanism for learning Visual Active Tracking (ICLR 2019)](https://openreview.net/pdf?id=HkgYmhR9KX). 
@@ -82,7 +84,7 @@ The ``ENV_NAME`` we used to evaluate in the paper is:
 - `Track2D-MazePartialNav-v0` (Maze-Nav).
 - `Track2D-MazePartialRam-v0` (Maze-Ram), 
 
-If you use the the default setting while training, the `PATH_TO_YOUR_MODLE` should be `logs/{ENV_NAME}/{DATE}/tracker-best.dat`
+If you use the the default setting while training, the `PATH_TO_YOUR_MODEL` should be `logs/{ENV_NAME}/{DATE}/tracker-best.dat`
 
 
 You can also evaluate the effectiveness of the `tracker-aware target` by running with different trackers, as:
